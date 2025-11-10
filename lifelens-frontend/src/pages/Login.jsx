@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 export default function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // If already logged in, redirect to dashboard (prevent back)
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,10 +24,12 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/login", formData);
-      localStorage.setItem("token", res.data.token);
+      const res = await api.post("/api/auth/login", formData);
+      // backend sets httpOnly cookie; use a flag locally for routing/session UI
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("lifelens_user", JSON.stringify(res.data.user || {}));
       alert("Welcome back 🌸");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true }); 
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials");
     } finally {
@@ -52,6 +61,7 @@ export default function Login() {
             value={formData.email}
             onChange={handleChange}
             className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
+            required
           />
           <input
             type="password"
@@ -60,6 +70,7 @@ export default function Login() {
             value={formData.password}
             onChange={handleChange}
             className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
+            required
           />
 
           <button
@@ -77,7 +88,7 @@ export default function Login() {
 
         <p className="text-center text-gray-600 text-sm mt-6">
           Don’t have an account?{" "}
-          <Link to="/" className="text-[#5B8A72] font-medium hover:underline">
+          <Link to="/signup" className="text-[#5B8A72] font-medium hover:underline">
             Sign up
           </Link>
         </p>

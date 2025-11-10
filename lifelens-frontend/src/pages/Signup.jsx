@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 export default function Signup() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // If already logged in, redirect to dashboard
+  useEffect(() => {
+    if (localStorage.getItem("isLoggedIn") === "true") {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -17,9 +24,10 @@ export default function Signup() {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post("http://localhost:3000/api/auth/signup", formData);
+      await api.post("/api/auth/signup", formData);
+      // After signup, redirect to login page (replace history so back doesn't go to signup)
       alert("Signup successful! Please log in.");
-      navigate("/login");
+      navigate("/login", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
     } finally {
@@ -51,6 +59,7 @@ export default function Signup() {
             value={formData.name}
             onChange={handleChange}
             className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
+            required
           />
           <input
             type="email"
@@ -59,6 +68,7 @@ export default function Signup() {
             value={formData.email}
             onChange={handleChange}
             className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
+            required
           />
           <input
             type="password"
@@ -67,6 +77,7 @@ export default function Signup() {
             value={formData.password}
             onChange={handleChange}
             className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
+            required
           />
 
           <button
