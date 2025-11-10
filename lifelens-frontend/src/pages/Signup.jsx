@@ -11,7 +11,11 @@ export default function Signup() {
   // If already logged in, redirect to dashboard
   useEffect(() => {
     if (localStorage.getItem("isLoggedIn") === "true") {
-      navigate("/dashboard", { replace: true });
+      navigate("/login", { replace: true });
+      window.history.pushState(null, "", "/login");
+      window.onpopstate = () => {
+        navigate("/login", { replace: true });
+      };
     }
   }, [navigate]);
 

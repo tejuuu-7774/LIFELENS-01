@@ -12,6 +12,11 @@ export default function Login() {
   useEffect(() => {
     if (localStorage.getItem("isLoggedIn") === "true") {
       navigate("/dashboard", { replace: true });
+      window.history.pushState(null, "", "/dashboard");
+      window.onpopstate = () => {
+        navigate("/dashboard", { replace: true });
+      };
+
     }
   }, [navigate]);
 

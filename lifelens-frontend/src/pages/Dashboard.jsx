@@ -16,6 +16,10 @@ const Dashboard = () => {
       localStorage.removeItem("lifelens_user");
       // navigate replace so back can't go to dashboard
       navigate("/login", { replace: true });
+      window.history.pushState(null, "", "/login");
+      window.onpopstate = () => {
+        navigate("/login", { replace: true });
+      };
     }
   };
 
