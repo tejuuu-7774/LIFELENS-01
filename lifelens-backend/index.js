@@ -15,7 +15,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Milestone 1: JWT + Hashed Password Backend Running 🚀");
+  res.send("Server is running");
 });
 
 const PORT = process.env.PORT || 3000;
