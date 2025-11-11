@@ -1,47 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../utils/api";
 
 export default function Signup() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // If already logged in, redirect to dashboard
-  useEffect(() => {
-    if (localStorage.getItem("isLoggedIn") === "true") {
-      navigate("/login", { replace: true });
-      window.history.pushState(null, "", "/login");
-      window.onpopstate = () => {
-        navigate("/login", { replace: true });
-      };
-    }
-  }, [navigate]);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError("");
   };
 
-  const handleSignup = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setResult(null);
     try {
-      await api.post("/api/auth/signup", formData);
-      // After signup, redirect to login page (replace history so back doesn't go to signup)
-      alert("Signup successful! Please log in.");
-      navigate("/login", { replace: true });
+      const res = await api.post("/api/auth/signup", formData);
+      setResult(res.data);
+      setFormData({ name: "", email: "", password: "" });
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong");
+      setError(err.response?.data?.message || "Signup failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-[#dfe9f3] to-[#ffffff] overflow-hidden">
-      <div className="relative z-10 bg-white/80 backdrop-blur-md shadow-md rounded-3xl w-full max-w-md p-10 transition-transform duration-300 hover:scale-[1.01]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#dfe9f3] to-[#ffffff]">
+      <div className="bg-white/80 backdrop-blur-md shadow-md rounded-3xl w-full max-w-md p-10">
         <h1 className="text-3xl font-semibold text-gray-800 text-center mb-2">
           Welcome to <span className="text-[#5B8A72]">LifeLens</span>
         </h1>
@@ -55,15 +45,15 @@ export default function Signup() {
           </p>
         )}
 
-        <form onSubmit={handleSignup} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="text"
             name="name"
             placeholder="Full Name"
             value={formData.name}
             onChange={handleChange}
-            className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
             required
+            className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC]"
           />
           <input
             type="email"
@@ -71,8 +61,8 @@ export default function Signup() {
             placeholder="Email Address"
             value={formData.email}
             onChange={handleChange}
-            className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
             required
+            className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC]"
           />
           <input
             type="password"
@@ -80,22 +70,38 @@ export default function Signup() {
             placeholder="Create Password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC] focus:outline-none transition"
             required
+            className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC]"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-xl font-medium text-white transition ${
-              loading
-                ? "bg-[#A8DADC]/70 cursor-not-allowed"
-                : "bg-[#5B8A72] hover:bg-[#497660]"
+            className={`w-full py-3 rounded-xl font-medium text-white ${
+              loading ? "bg-[#A8DADC]/70" : "bg-[#5B8A72] hover:bg-[#497660]"
             }`}
           >
             {loading ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
+
+        {result && (
+          <div className="mt-5 text-sm text-gray-700 bg-green-50 border border-green-100 rounded-md p-3">
+            <p><strong>{result.message}</strong></p>
+            <p className="break-words mt-2">
+              <strong>Hashed Password:</strong> {result.hashedPassword}
+            </p>
+            <p className="break-words mt-2">
+              <strong>Token:</strong> {result.token}
+            </p>
+            <p
+              onClick={() => navigate("/login")}
+              className="mt-3 text-[#5B8A72] hover:underline cursor-pointer text-center"
+            >
+              Proceed to Login →
+            </p>
+          </div>
+        )}
 
         <p className="text-center text-gray-600 text-sm mt-6">
           Already have an account?{" "}

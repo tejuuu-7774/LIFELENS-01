@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://lifelens-01.onrender.com",
-  withCredentials: true, 
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
 });
 
 export default api;
