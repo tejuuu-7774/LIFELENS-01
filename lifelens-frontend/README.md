@@ -1,16 +1,46 @@
-# React + Vite
+LifeLens – AI Powered Personal Journal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+LifeLens is a digital journaling platform that helps users record their daily experiences, reflect on emotions, and revisit meaningful moments with ease. It brings together clean UI, fast search, organized filtering, structured sorting, pagination, and an AI-powered writing assistant to make journaling simple and inspiring.
 
-Currently, two official plugins are available:
+What LifeLens does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Secure user authentication (signup, login, logout)
+Add, view, edit, and delete journal entries
+Search entries by title or keywords
+Filter by mood, category, and date range
+Sort journals by newest, oldest, or emotional depth
+Pagination for smooth browsing
+One-click AI writing prompts when you don’t know what to write
+Responsive, clean frontend UI with multiple pages and smooth routing
 
-## React Compiler
+Tech Stack
+Frontend:
+React.js, React Router, TailwindCSS
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Backend:
+Node.js, Express.js
 
-## Expanding the ESLint configuration
+Database:
+MongoDB
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Authentication:
+JWT 
+
+AI Support:
+OpenAI GPT for writing prompts
+
+
+API Overview
+
+POST /api/auth/signup — Register a new user
+POST /api/auth/login — Login and receive JWT
+GET /api/journal — Fetch all entries (supports search, filter, sort, pagination)
+POST /api/journal — Add a journal entry
+PUT /api/journal/:id — Update a specific entry
+DELETE /api/journal/:id — Delete a specific entry
+POST /api/ai/prompt — Generate an AI journaling prompt
+
+Deployment
+Frontend: Live on Vercel
+Backend: Live on Render
+Database: MongoDB (Cloud)
