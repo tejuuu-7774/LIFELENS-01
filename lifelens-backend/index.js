@@ -1,6 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const connectDB = require("./db/config");
 const authRoutes = require("./routes/authRoutes");
 
@@ -9,8 +10,16 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
+
+app.use(
+  cors({
+    origin: ["http://localhost:5173", process.env.CLIENT_URL],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"]
+  })
+);
 
 app.use("/api/auth", authRoutes);
 
@@ -18,5 +27,6 @@ app.get("/", (req, res) => {
   res.send("Server is running");
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+app.listen(process.env.PORT || 3000, () =>
+  console.log("Server running")
+);
