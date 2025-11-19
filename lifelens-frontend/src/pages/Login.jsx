@@ -17,8 +17,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await api.post("/api/auth/login", formData);
-      localStorage.setItem("token", res.data.token);
+      await api.post("/api/auth/login", formData);
       navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Invalid credentials");
@@ -33,9 +32,6 @@ export default function Login() {
         <h1 className="text-3xl font-semibold text-gray-800 text-center mb-2">
           Welcome back to <span className="text-[#5B8A72]">LifeLens</span>
         </h1>
-        <p className="text-center text-gray-500 mb-8">
-          A peaceful space to revisit your thoughts ☁️
-        </p>
 
         {error && (
           <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-md p-2 mb-3 text-center">
@@ -53,6 +49,7 @@ export default function Login() {
             required
             className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC]"
           />
+
           <input
             type="password"
             name="password"
@@ -75,7 +72,7 @@ export default function Login() {
         </form>
 
         <p className="text-center text-gray-600 text-sm mt-6">
-          Don’t have an account?{" "}
+          Don’t have an account?
           <Link to="/signup" className="text-[#5B8A72] font-medium hover:underline">
             Sign up
           </Link>

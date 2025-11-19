@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import api from "../utils/api";
 
-export default function ProtectedRoute({ children }) {
+export default function PublicRoute({ children }) {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
-    api.get("/api/auth/me")
+    api
+      .get("/api/auth/me")
       .then(() => setAuthenticated(true))
       .catch(() => setAuthenticated(false))
       .finally(() => setLoading(false));
@@ -15,5 +16,5 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) return null;
 
-  return authenticated ? children : <Navigate to="/login" replace />;
+  return authenticated ? <Navigate to="/me" replace /> : children;
 }

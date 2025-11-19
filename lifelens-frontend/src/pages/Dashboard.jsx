@@ -2,42 +2,27 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
-const Dashboard = () => {
+export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
     api
-      .get("/api/auth/dashboard", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/api/auth/me")
       .then((res) => setUser(res.data.user))
-      .catch(() => {
-        localStorage.removeItem("token");
-        navigate("/login", { replace: true });
-      });
+      .catch(() => navigate("/login", { replace: true }));
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/", { replace: true });
+    api.post("/api/auth/logout").finally(() => {
+      navigate("/", { replace: true });
+    });
   };
 
   return (
     <div className="min-h-screen bg-[#F6FBF7] flex flex-col items-center px-6 py-10">
-
-      {/* Header */}
       <header className="w-full max-w-5xl flex justify-between items-center mb-10">
-        <h1 className="text-3xl font-bold text-[#4A6651]">
-          Dashboard
-        </h1>
-
+        <h1 className="text-3xl font-bold text-[#4A6651]">Dashboard</h1>
         <button
           onClick={handleLogout}
           className="px-5 py-2 bg-[#5B8A72] text-white rounded-lg shadow hover:bg-[#4B735E]"
@@ -46,8 +31,7 @@ const Dashboard = () => {
         </button>
       </header>
 
-      {/* Welcome Card */}
-      <div className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-lg border border-[#E3EFE7] text-center mb-12 mt-30">
+      <div className="w-full max-w-4xl bg-white p-10 rounded-3xl shadow-lg border border-[#E3EFE7] text-center mb-12">
         <h2 className="text-2xl font-semibold text-[#4A6651]">
           {user ? `Welcome, ${user.email}` : "Loading..."}
         </h2>
@@ -57,6 +41,4 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
