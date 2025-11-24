@@ -5,6 +5,9 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import JournalsList from "./pages/JournalsList";
+import AddJournal from "./pages/AddJournal";
+import ViewJournal from "./pages/ViewJournal";
 
 function App() {
   return (
@@ -36,6 +39,33 @@ function App() {
             <Dashboard />
           </ProtectedRoute>
         }
+      />
+      
+      <Route
+        path="/journals"
+        element={
+          <ProtectedRoute>
+            <JournalsList />
+          </ProtectedRoute>
+        }
+      />
+      
+      <Route
+          path="/journals/add"
+          element={
+            <ProtectedRoute>
+              <AddJournal />
+            </ProtectedRoute>
+          }
+        />
+
+      <Route 
+          path="/journals/:id" 
+          element={
+            <ProtectedRoute>
+              <ViewJournal />
+            </ProtectedRoute>
+          } 
       />
     </Routes>
   );
