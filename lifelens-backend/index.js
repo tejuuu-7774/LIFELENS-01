@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./db/config");
 const authRoutes = require("./routes/authRoutes");
+const journalRoutes = require("./routes/journalRoutes");
 
 dotenv.config();
 connectDB();
@@ -22,6 +23,7 @@ app.use(
 );
 
 app.use("/api/auth", authRoutes);
+app.use("/api/journal", journalRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
