@@ -11,7 +11,7 @@ const JournalSchema = new mongoose.Schema(
       default: "neutral",
       index: true,
     },
-    category: { type: String, trim: true, index: true },
+    category: { type: mongoose.Schema.Types.ObjectId, ref: "Tag", index: true }, // UPDATED
     emotionalScore: { type: Number, min: 0, max: 100, default: 50 },
     entryDate: { type: Date, default: Date.now, index: true },
   },

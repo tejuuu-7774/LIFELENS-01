@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const connectDB = require("./db/config");
 const authRoutes = require("./routes/authRoutes");
 const journalRoutes = require("./routes/journalRoutes");
+const tagRoutes = require("./routes/tagRoutes");
 
 dotenv.config();
 connectDB();
@@ -24,6 +25,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/journal", journalRoutes);
+app.use("/api/tags", tagRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
