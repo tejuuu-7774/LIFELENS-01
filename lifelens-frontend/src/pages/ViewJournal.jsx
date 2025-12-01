@@ -8,8 +8,12 @@ export default function ViewJournal() {
   const navigate = useNavigate();
 
   const [journal, setJournal] = useState(null);
+  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+
+  const [renamingTag, setRenamingTag] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
 
   const [form, setForm] = useState({
     title: "",
@@ -19,172 +23,327 @@ export default function ViewJournal() {
     entryDate: "",
   });
 
+  // Load journal + tags
+  const loadJournalAndTags = async () => {
+    try {
+      const [journalRes, tagsRes] = await Promise.all([
+        api.get(`/api/journal/${id}`),
+        api.get("/api/tags"),
+      ]);
+      const j = journalRes.data.journal;
+      setJournal(j);
+      setTags(tagsRes.data.tags || []);
+      setForm({
+        title: j.title || "",
+        content: j.content || "",
+        mood: j.mood || "neutral",
+        category: j.category?._id || "",
+        entryDate: j.entryDate ? j.entryDate.slice(0, 10) : "",
+      });
+    } catch (err) {
+      // If something is wrong, go back to list
+      console.log(err);
+      navigate("/journals");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    api
-      .get(`/api/journal/${id}`)
-      .then((res) => {
-        const j = res.data.journal;
-        setJournal(j);
-        setForm({
-          title: j.title,
-          content: j.content,
-          mood: j.mood,
-          category: j.category?._id || "",
-          entryDate: j.entryDate?.slice(0, 10) || "",
-        });
-      })
-      .catch(() => navigate("/journals"))
-      .finally(() => setLoading(false));
-  }, [id, navigate]);
+    loadJournalAndTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
-  const handleEditChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
+  // Save journal edits
   const saveChanges = async () => {
-    await api.put(`/api/journal/${id}`, form);
-    navigate(0);
+    try {
+      await api.put(`/api/journal/${id}`, form);
+      // Refresh journal from server so populated category name is current
+      const res = await api.get(`/api/journal/${id}`);
+      setJournal(res.data.journal);
+      setEditMode(false);
+      setRenamingTag(false);
+      setRenameValue("");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to save changes");
+    }
   };
 
+  // Cancel edits and revert form to last-saved journal
+  const cancelEdit = () => {
+    if (!journal) {
+      setForm({
+        title: "",
+        content: "",
+        mood: "neutral",
+        category: "",
+        entryDate: "",
+      });
+    } else {
+      setForm({
+        title: journal.title || "",
+        content: journal.content || "",
+        mood: journal.mood || "neutral",
+        category: journal.category?._id || "",
+        entryDate: journal.entryDate ? journal.entryDate.slice(0, 10) : "",
+      });
+    }
+    setEditMode(false);
+    setRenamingTag(false);
+    setRenameValue("");
+  };
+
+  // Delete entry
   const deleteEntry = async () => {
-    if (!window.confirm("Delete this journal entry?")) return;
-    await api.delete(`/api/journal/${id}`);
-    navigate("/journals");
+    try {
+      if (!window.confirm("Delete this journal entry?")) return;
+      await api.delete(`/api/journal/${id}`);
+      navigate("/journals");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete entry");
+    }
+  };
+
+  // Rename tag (inline)
+  const renameTag = async () => {
+    if (!form.category) return alert("Select a tag first");
+    if (!renameValue.trim()) return alert("Enter a name for the tag");
+
+    try {
+      await api.put(`/api/tags/${form.category}`, { name: renameValue.trim() });
+
+      // Refresh tags and journal (so populated category name updates)
+      const [tagsRes, journalRes] = await Promise.all([
+        api.get("/api/tags"),
+        api.get(`/api/journal/${id}`),
+      ]);
+      setTags(tagsRes.data.tags || []);
+      setJournal(journalRes.data.journal);
+      // if the renamed tag is currently selected in form, keep the selection
+      setForm((p) => ({ ...p, category: p.category }));
+      setRenamingTag(false);
+      setRenameValue("");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to rename tag");
+    }
   };
 
   if (loading) return null;
 
   return (
-    <div className="min-h-screen bg-[#F6FBF7] pt-18">
+    <div className="min-h-screen bg-gradient-to-b from-[#F6FBF7] to-[#F0FAF6] pt-20">
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-6 py-10">
-
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-[#4A6651]">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl md:text-3xl font-extrabold text-[#2f513f]">
             {editMode ? "Edit Entry" : "View Entry"}
           </h1>
-
-          <button
-            onClick={() => navigate("/journals")}
-            className="px-4 py-2 bg-[#A8DADC] text-[#2C4A3E] rounded-xl shadow hover:bg-[#91c7c8]"
-          >
-            Back
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => navigate("/journals")}
+              className="px-4 py-2 bg-white border border-[#D9EAE0] rounded-lg shadow-sm text-sm text-[#3E5A44] hover:bg-[#f8fbf9]"
+            >
+              Back
+            </button>
+            {!editMode && (
+              <button
+                type="button"
+                onClick={() => setEditMode(true)}
+                className="px-4 py-2 bg-[#A8DADC] text-[#21403a] rounded-lg shadow-sm text-sm hover:bg-[#91c7c8]"
+              >
+                Edit
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-lg border border-[#E3EFE7]">
-
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-lg border border-[#E6F0EA] p-8">
           {/* EDIT MODE */}
           {editMode ? (
             <>
-              <input
-                type="text"
-                name="title"
-                value={form.title}
-                onChange={handleEditChange}
-                className="w-full p-3 border rounded-xl font-semibold text-lg mb-4"
-              />
-
-              <textarea
-                name="content"
-                rows={8}
-                value={form.content}
-                onChange={handleEditChange}
-                className="w-full p-3 border rounded-xl mb-4"
-              />
-
-              <div className="grid md:grid-cols-3 gap-4 mb-6">
-                <select
-                  name="mood"
-                  value={form.mood}
-                  onChange={handleEditChange}
-                  className="p-3 border rounded-xl"
-                >
-                  <option>happy</option>
-                  <option>sad</option>
-                  <option>angry</option>
-                  <option>anxious</option>
-                  <option>neutral</option>
-                  <option>excited</option>
-                  <option>other</option>
-                </select>
-
+              <div className="space-y-4">
                 <input
-                  type="text"
-                  name="category"
-                  disabled
-                  value={
-                    journal.category?.name
-                      ? `${journal.category.name} (edit tag in Add Entry page)`
-                      : "No tag"
-                  }
-                  className="p-3 border rounded-xl bg-gray-100 text-gray-500"
+                  name="title"
+                  value={form.title}
+                  onChange={handleChange}
+                  placeholder="Title"
+                  className="w-full text-xl md:text-2xl font-semibold p-4 rounded-lg border border-[#E8F0EA] focus:ring-2 focus:ring-[#cfe8e0]"
                 />
 
-                <input
-                  type="date"
-                  name="entryDate"
-                  value={form.entryDate}
-                  onChange={handleEditChange}
-                  className="p-3 border rounded-xl"
+                <textarea
+                  name="content"
+                  value={form.content}
+                  onChange={handleChange}
+                  rows={8}
+                  placeholder="Write your thoughts..."
+                  className="w-full p-4 rounded-lg border border-[#E8F0EA] focus:ring-2 focus:ring-[#cfe8e0] text-gray-800 leading-relaxed"
                 />
-              </div>
 
-              <div className="flex gap-4">
-                <button
-                  onClick={saveChanges}
-                  className="px-6 py-3 bg-[#5B8A72] text-white rounded-xl shadow hover:bg-[#4B735E]"
-                >
-                  Save Changes
-                </button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <select
+                    name="mood"
+                    value={form.mood}
+                    onChange={handleChange}
+                    className="p-3 rounded-lg border border-[#E8F0EA]"
+                  >
+                    <option value="happy">happy</option>
+                    <option value="sad">sad</option>
+                    <option value="angry">angry</option>
+                    <option value="anxious">anxious</option>
+                    <option value="neutral">neutral</option>
+                    <option value="excited">excited</option>
+                    <option value="other">other</option>
+                  </select>
 
-                <button
-                  onClick={() => setEditMode(false)}
-                  className="px-6 py-3 bg-gray-300 text-gray-700 rounded-xl shadow hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
+                  {/* Tag select + rename */}
+                  <div>
+                    <div className="flex gap-2">
+                      <select
+                        name="category"
+                        value={form.category}
+                        onChange={handleChange}
+                        className="flex-1 p-3 rounded-lg border border-[#E8F0EA]"
+                      >
+                        <option value="">No Tag</option>
+                        {tags.map((t) => (
+                          <option key={t._id} value={t._id}>
+                            {t.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!form.category) return alert("Select a tag to rename");
+                          setRenamingTag(true);
+                          const current = tags.find((tt) => tt._id === form.category);
+                          setRenameValue(current?.name || "");
+                        }}
+                        className="px-3 py-2 bg-[#f0f7f6] border border-[#dbeee5] rounded-lg text-sm"
+                      >
+                        ✏
+                      </button>
+                    </div>
+
+                    {renamingTag && (
+                      <div className="flex gap-2 mt-2">
+                        <input
+                          type="text"
+                          value={renameValue}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          className="flex-1 p-2 rounded-lg border border-[#E8F0EA]"
+                          placeholder="New tag name"
+                        />
+                        <button
+                          type="button"
+                          onClick={renameTag}
+                          className="px-4 py-2 bg-[#5B8A72] text-white rounded-lg"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setRenamingTag(false);
+                            setRenameValue("");
+                          }}
+                          className="px-4 py-2 bg-gray-200 rounded-lg text-sm text-gray-700"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    name="entryDate"
+                    type="date"
+                    value={form.entryDate}
+                    onChange={handleChange}
+                    className="p-3 rounded-lg border border-[#E8F0EA]"
+                  />
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex items-center gap-3 mt-4">
+                  <button
+                    type="button"
+                    onClick={saveChanges}
+                    className="px-5 py-2 bg-[#2f6f56] text-white rounded-lg shadow-sm"
+                  >
+                    Save
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={cancelEdit}
+                    className="px-5 py-2 bg-white border border-[#E6F0EA] rounded-lg text-[#3E5A44]"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={deleteEntry}
+                    className="ml-auto px-4 py-2 bg-red-400 text-white rounded-lg"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </>
           ) : (
+            /* VIEW MODE */
             <>
-              {/* VIEW MODE */}
-              <h2 className="text-2xl font-semibold text-[#4A6651] mb-3">
-                {journal.title}
-              </h2>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#2f513f] mb-3">{journal.title}</h2>
 
-              <p className="text-gray-700 whitespace-pre-line leading-relaxed mb-6">
-                {journal.content}
-              </p>
+              <div className="flex items-center gap-3 mb-6">
+                {journal.category?.name && (
+                  <span className="px-3 py-1 bg-[#E8F7EF] text-[#2f6549] rounded-full text-sm font-medium">
+                    #{journal.category.name}
+                  </span>
+                )}
 
-              <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-600 mb-10">
-                <p><span className="font-semibold">Mood:</span> {journal.mood}</p>
-                <p><span className="font-semibold">Tag:</span> {journal.category?.name || "—"}</p>
-                <p>
-                  <span className="font-semibold">Date:</span>{" "}
+                <span className="px-3 py-1 bg-[#DDF4F7] text-[#21565f] rounded-full text-sm font-medium">
+                  {journal.mood}
+                </span>
+
+                <span className="text-sm text-gray-500 ml-auto">
                   {new Date(journal.entryDate).toDateString()}
-                </p>
+                </span>
               </div>
 
-              <div className="flex gap-4">
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line mb-6">{journal.content}</p>
+
+              <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => setEditMode(true)}
-                  className="px-6 py-3 bg-[#A8DADC] text-[#2C4A3E] rounded-xl shadow hover:bg-[#91c7c8]"
+                  className="px-4 py-2 bg-[#A8DADC] text-[#21403a] rounded-lg"
                 >
                   Edit
                 </button>
 
                 <button
+                  type="button"
                   onClick={deleteEntry}
-                  className="px-6 py-3 bg-red-400 text-white rounded-xl shadow hover:bg-red-500"
+                  className="px-4 py-2 bg-red-400 text-white rounded-lg"
                 >
                   Delete
                 </button>
               </div>
             </>
           )}
-
         </div>
       </div>
     </div>
