@@ -5,17 +5,20 @@ import Navbar from "../components/Navbar";
 
 export default function JournalsList() {
   const [journals, setJournals] = useState([]);
+  const [tags, setTags] = useState([]);
+
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
 
+  // filters
   const [search, setSearch] = useState("");
   const [mood, setMood] = useState("");
   const [tag, setTag] = useState("");
-  const [tags, setTags] = useState([]);
   const [sort, setSort] = useState("newest");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
+  // Load tags
   useEffect(() => {
     api.get("/api/tags").then((res) => setTags(res.data.tags));
   }, []);
@@ -54,6 +57,8 @@ export default function JournalsList() {
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-6 py-10">
+
+        {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-[#4A6651]">Your Journals</h1>
           <Link
@@ -64,6 +69,7 @@ export default function JournalsList() {
           </Link>
         </div>
 
+        {/* FILTERS */}
         <div className="bg-white p-6 rounded-2xl shadow border border-[#E3EFE7] mb-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -81,13 +87,13 @@ export default function JournalsList() {
               onChange={(e) => setMood(e.target.value)}
             >
               <option value="">Mood (All)</option>
-              <option value="happy">Happy</option>
-              <option value="sad">Sad</option>
-              <option value="angry">Angry</option>
-              <option value="anxious">Anxious</option>
-              <option value="neutral">Neutral</option>
-              <option value="excited">Excited</option>
-              <option value="other">Other</option>
+              <option>happy</option>
+              <option>sad</option>
+              <option>angry</option>
+              <option>anxious</option>
+              <option>neutral</option>
+              <option>excited</option>
+              <option>other</option>
             </select>
 
             <select
@@ -105,6 +111,7 @@ export default function JournalsList() {
 
           </div>
 
+          {/* date + sort */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
             <input
               type="date"
@@ -125,8 +132,8 @@ export default function JournalsList() {
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
               <option value="emotion">Emotion Depth</option>
             </select>
 
@@ -139,6 +146,7 @@ export default function JournalsList() {
           </div>
         </div>
 
+        {/* JOURNAL CARDS */}
         {journals.length === 0 ? (
           <p className="text-center text-gray-500">No journals found.</p>
         ) : (
@@ -152,22 +160,22 @@ export default function JournalsList() {
                 <h2 className="text-xl font-semibold text-[#4A6651]">{j.title}</h2>
                 <p className="text-gray-600 text-sm line-clamp-2 mt-2">{j.content}</p>
 
-                <div className="text-xs text-gray-400 mt-3 flex items-center justify-between">
+                <div className="text-xs text-gray-400 mt-3 flex justify-between">
                   <span className="capitalize">{j.mood}</span>
-
-                  {j.category && (
-                    <span className="px-2 py-1 bg-[#E3EFE7] text-[#4A6651] rounded-lg text-[10px] font-medium">
-                      {j.category.name}
-                    </span>
-                  )}
-
                   <span>{new Date(j.entryDate).toDateString()}</span>
                 </div>
+
+                {j.category && (
+                  <p className="text-xs mt-1 text-[#5B8A72] font-semibold">
+                    #{j.category.name}
+                  </p>
+                )}
               </Link>
             ))}
           </div>
         )}
 
+        {/* PAGINATION */}
         <div className="flex justify-center gap-4 mt-10">
           <button
             disabled={page === 1}

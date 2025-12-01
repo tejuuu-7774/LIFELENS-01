@@ -8,7 +8,6 @@ export default function ViewJournal() {
   const navigate = useNavigate();
 
   const [journal, setJournal] = useState(null);
-  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
@@ -20,10 +19,7 @@ export default function ViewJournal() {
     entryDate: "",
   });
 
-  // Fetch tags + journal
   useEffect(() => {
-    api.get("/api/tags").then((res) => setTags(res.data.tags));
-
     api
       .get(`/api/journal/${id}`)
       .then((res) => {
@@ -34,7 +30,7 @@ export default function ViewJournal() {
           content: j.content,
           mood: j.mood,
           category: j.category?._id || "",
-          entryDate: j.entryDate?.slice(0, 10),
+          entryDate: j.entryDate?.slice(0, 10) || "",
         });
       })
       .catch(() => navigate("/journals"))
@@ -47,7 +43,6 @@ export default function ViewJournal() {
 
   const saveChanges = async () => {
     await api.put(`/api/journal/${id}`, form);
-    setEditMode(false);
     navigate(0);
   };
 
@@ -80,6 +75,7 @@ export default function ViewJournal() {
 
         <div className="bg-white p-8 rounded-3xl shadow-lg border border-[#E3EFE7]">
 
+          {/* EDIT MODE */}
           {editMode ? (
             <>
               <input
@@ -99,35 +95,32 @@ export default function ViewJournal() {
               />
 
               <div className="grid md:grid-cols-3 gap-4 mb-6">
-
                 <select
                   name="mood"
                   value={form.mood}
                   onChange={handleEditChange}
                   className="p-3 border rounded-xl"
                 >
-                  <option value="happy">Happy</option>
-                  <option value="sad">Sad</option>
-                  <option value="angry">Angry</option>
-                  <option value="anxious">Anxious</option>
-                  <option value="neutral">Neutral</option>
-                  <option value="excited">Excited</option>
-                  <option value="other">Other</option>
+                  <option>happy</option>
+                  <option>sad</option>
+                  <option>angry</option>
+                  <option>anxious</option>
+                  <option>neutral</option>
+                  <option>excited</option>
+                  <option>other</option>
                 </select>
 
-                <select
+                <input
+                  type="text"
                   name="category"
-                  value={form.category}
-                  onChange={handleEditChange}
-                  className="p-3 border rounded-xl"
-                >
-                  <option value="">Select Tag</option>
-                  {tags.map((t) => (
-                    <option key={t._id} value={t._id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
+                  disabled
+                  value={
+                    journal.category?.name
+                      ? `${journal.category.name} (edit tag in Add Entry page)`
+                      : "No tag"
+                  }
+                  className="p-3 border rounded-xl bg-gray-100 text-gray-500"
+                />
 
                 <input
                   type="date"
@@ -156,6 +149,7 @@ export default function ViewJournal() {
             </>
           ) : (
             <>
+              {/* VIEW MODE */}
               <h2 className="text-2xl font-semibold text-[#4A6651] mb-3">
                 {journal.title}
               </h2>
@@ -166,12 +160,7 @@ export default function ViewJournal() {
 
               <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-600 mb-10">
                 <p><span className="font-semibold">Mood:</span> {journal.mood}</p>
-
-                <p>
-                  <span className="font-semibold">Tag:</span>{" "}
-                  {journal.category ? journal.category.name : "—"}
-                </p>
-
+                <p><span className="font-semibold">Tag:</span> {journal.category?.name || "—"}</p>
                 <p>
                   <span className="font-semibold">Date:</span>{" "}
                   {new Date(journal.entryDate).toDateString()}
@@ -195,6 +184,7 @@ export default function ViewJournal() {
               </div>
             </>
           )}
+
         </div>
       </div>
     </div>
