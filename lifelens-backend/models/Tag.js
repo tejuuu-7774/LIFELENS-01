@@ -6,12 +6,12 @@ const TagSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
+      index: true
     },
     name: {
       type: String,
       required: true,
-      trim: true,
+      trim: true
     }
   },
   { timestamps: true }
