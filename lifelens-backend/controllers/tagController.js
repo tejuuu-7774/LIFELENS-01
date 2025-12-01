@@ -33,6 +33,31 @@ async function getTags(req, res) {
   }
 }
 
+async function updateTag(req, res) {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: "Tag name required" });
+    }
+
+    const tag = await Tag.findOneAndUpdate(
+      { _id: id, user: req.user.id },
+      { name: name.trim() },
+      { new: true }
+    );
+
+    if (!tag) {
+      return res.status(404).json({ message: "Tag not found or not authorized" });
+    }
+
+    res.json({ message: "Updated", tag });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+}
+
 // DELETE TAG
 async function deleteTag(req, res) {
   try {
@@ -54,4 +79,4 @@ async function deleteTag(req, res) {
   }
 }
 
-module.exports = { createTag, getTags, deleteTag };
+module.exports = { createTag, getTags, deleteTag ,updateTag};
