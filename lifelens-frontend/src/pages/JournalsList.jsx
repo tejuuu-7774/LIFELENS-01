@@ -8,51 +8,52 @@ export default function JournalsList() {
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
 
-  // filters
   const [search, setSearch] = useState("");
   const [mood, setMood] = useState("");
-  const [category, setCategory] = useState("");
+  const [tag, setTag] = useState("");
+  const [tags, setTags] = useState([]);
   const [sort, setSort] = useState("newest");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
 
-    const fetchJournals = useCallback(() => {
+  useEffect(() => {
+    api.get("/api/tags").then((res) => setTags(res.data.tags));
+  }, []);
+
+  const fetchJournals = useCallback(() => {
     api
-        .get("/api/journal", {
+      .get("/api/journal", {
         params: {
-            page,
-            limit: 6,
-            search,
-            mood,
-            category,
-            sort,
-            from,
-            to,
+          page,
+          limit: 6,
+          search,
+          mood,
+          tag,
+          sort,
+          from,
+          to,
         },
-        })
-        .then((res) => {
+      })
+      .then((res) => {
         setJournals(res.data.journals);
         setTotalPages(res.data.totalPages);
-        });
-    }, [page, search, mood, category, sort, from, to]);
+      });
+  }, [page, search, mood, tag, sort, from, to]);
 
-    useEffect(() => {
-        fetchJournals();
-        }, [fetchJournals]);
+  useEffect(() => {
+    fetchJournals();
+  }, [fetchJournals]);
 
-
-        const applyFilters = () => {
-            setPage(1);
-            fetchJournals();
-        };
+  const applyFilters = () => {
+    setPage(1);
+    fetchJournals();
+  };
 
   return (
     <div className="min-h-screen bg-[#F6FBF7] pt-18">
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-6 py-10">
-
-        {/* HEADER */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold text-[#4A6651]">Your Journals</h1>
           <Link
@@ -63,7 +64,6 @@ export default function JournalsList() {
           </Link>
         </div>
 
-        {/* FILTERS */}
         <div className="bg-white p-6 rounded-2xl shadow border border-[#E3EFE7] mb-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
@@ -90,16 +90,21 @@ export default function JournalsList() {
               <option value="other">Other</option>
             </select>
 
-            <input
-              type="text"
-              placeholder="Category..."
+            <select
               className="p-3 border rounded-xl"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-            />
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+            >
+              <option value="">Tag (All)</option>
+              {tags.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+
           </div>
 
-          {/* date + sort row */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
             <input
               type="date"
@@ -134,7 +139,6 @@ export default function JournalsList() {
           </div>
         </div>
 
-        {/* JOURNAL CARDS */}
         {journals.length === 0 ? (
           <p className="text-center text-gray-500">No journals found.</p>
         ) : (
@@ -147,8 +151,16 @@ export default function JournalsList() {
               >
                 <h2 className="text-xl font-semibold text-[#4A6651]">{j.title}</h2>
                 <p className="text-gray-600 text-sm line-clamp-2 mt-2">{j.content}</p>
-                <div className="text-xs text-gray-400 mt-3 flex justify-between">
+
+                <div className="text-xs text-gray-400 mt-3 flex items-center justify-between">
                   <span className="capitalize">{j.mood}</span>
+
+                  {j.category && (
+                    <span className="px-2 py-1 bg-[#E3EFE7] text-[#4A6651] rounded-lg text-[10px] font-medium">
+                      {j.category.name}
+                    </span>
+                  )}
+
                   <span>{new Date(j.entryDate).toDateString()}</span>
                 </div>
               </Link>
@@ -156,7 +168,6 @@ export default function JournalsList() {
           </div>
         )}
 
-        {/* PAGINATION */}
         <div className="flex justify-center gap-4 mt-10">
           <button
             disabled={page === 1}

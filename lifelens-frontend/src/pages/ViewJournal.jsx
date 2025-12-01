@@ -8,6 +8,7 @@ export default function ViewJournal() {
   const navigate = useNavigate();
 
   const [journal, setJournal] = useState(null);
+  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
 
@@ -19,7 +20,10 @@ export default function ViewJournal() {
     entryDate: "",
   });
 
+  // Fetch tags + journal
   useEffect(() => {
+    api.get("/api/tags").then((res) => setTags(res.data.tags));
+
     api
       .get(`/api/journal/${id}`)
       .then((res) => {
@@ -29,7 +33,7 @@ export default function ViewJournal() {
           title: j.title,
           content: j.content,
           mood: j.mood,
-          category: j.category,
+          category: j.category?._id || "",
           entryDate: j.entryDate?.slice(0, 10),
         });
       })
@@ -44,7 +48,7 @@ export default function ViewJournal() {
   const saveChanges = async () => {
     await api.put(`/api/journal/${id}`, form);
     setEditMode(false);
-    navigate(0); // reload page
+    navigate(0);
   };
 
   const deleteEntry = async () => {
@@ -60,8 +64,7 @@ export default function ViewJournal() {
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-6 py-10">
-        
-        {/* HEADER */}
+
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-[#4A6651]">
             {editMode ? "Edit Entry" : "View Entry"}
@@ -75,11 +78,10 @@ export default function ViewJournal() {
           </button>
         </div>
 
-        {/* CONTENT WRAPPER */}
         <div className="bg-white p-8 rounded-3xl shadow-lg border border-[#E3EFE7]">
+
           {editMode ? (
             <>
-              {/* TITLE */}
               <input
                 type="text"
                 name="title"
@@ -88,7 +90,6 @@ export default function ViewJournal() {
                 className="w-full p-3 border rounded-xl font-semibold text-lg mb-4"
               />
 
-              {/* CONTENT */}
               <textarea
                 name="content"
                 rows={8}
@@ -97,8 +98,8 @@ export default function ViewJournal() {
                 className="w-full p-3 border rounded-xl mb-4"
               />
 
-              {/* MOOD + CATEGORY + DATE */}
               <div className="grid md:grid-cols-3 gap-4 mb-6">
+
                 <select
                   name="mood"
                   value={form.mood}
@@ -114,14 +115,19 @@ export default function ViewJournal() {
                   <option value="other">Other</option>
                 </select>
 
-                <input
-                  type="text"
+                <select
                   name="category"
                   value={form.category}
                   onChange={handleEditChange}
                   className="p-3 border rounded-xl"
-                  placeholder="Category"
-                />
+                >
+                  <option value="">Select Tag</option>
+                  {tags.map((t) => (
+                    <option key={t._id} value={t._id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
 
                 <input
                   type="date"
@@ -132,7 +138,6 @@ export default function ViewJournal() {
                 />
               </div>
 
-              {/* SAVE */}
               <div className="flex gap-4">
                 <button
                   onClick={saveChanges}
@@ -161,14 +166,18 @@ export default function ViewJournal() {
 
               <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-600 mb-10">
                 <p><span className="font-semibold">Mood:</span> {journal.mood}</p>
-                <p><span className="font-semibold">Category:</span> {journal.category || "—"}</p>
+
+                <p>
+                  <span className="font-semibold">Tag:</span>{" "}
+                  {journal.category ? journal.category.name : "—"}
+                </p>
+
                 <p>
                   <span className="font-semibold">Date:</span>{" "}
                   {new Date(journal.entryDate).toDateString()}
                 </p>
               </div>
 
-              {/* ACTION BUTTONS */}
               <div className="flex gap-4">
                 <button
                   onClick={() => setEditMode(true)}

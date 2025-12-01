@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import Navbar from "../components/Navbar";
@@ -11,15 +11,50 @@ export default function AddJournal() {
     content: "",
     mood: "neutral",
     category: "",
-    entryDate: new Date().toISOString().slice(0, 10), 
+    entryDate: new Date().toISOString().slice(0, 10),
   });
 
   const [loading, setLoading] = useState(false);
 
+  // TAG STATES
+  const [tags, setTags] = useState([]);
+  const [newTag, setNewTag] = useState("");
+  const [creatingTag, setCreatingTag] = useState(false);
+
+  // FETCH TAGS
+  useEffect(() => {
+    api.get("/api/tags").then((res) => setTags(res.data.tags));
+  }, []);
+
+  // ADD TAG
+  const createTag = async () => {
+    if (!newTag.trim()) return;
+
+    const res = await api.post("/api/tags", { name: newTag });
+
+    setTags((prev) => [...prev, res.data.tag]);
+    setForm((prev) => ({ ...prev, category: res.data.tag._id }));
+
+    setNewTag("");
+    setCreatingTag(false);
+  };
+
+  // DELETE TAG
+  const deleteTag = async (tagId) => {
+    if (!window.confirm("Delete this tag? It will be removed from all journals.")) return;
+
+    await api.delete(`/api/tags/${tagId}`);
+
+    setTags((prev) => prev.filter((t) => t._id !== tagId));
+    setForm((prev) => ({ ...prev, category: "" }));
+  };
+
+  // HANDLE INPUTS
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // SUBMIT JOURNAL ENTRY
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -97,26 +132,75 @@ export default function AddJournal() {
             </select>
           </div>
 
-          {/* CATEGORY */}
+          {/* TAG FIELD + DELETE OPTION */}
           <div>
-            <label className="block text-[#4A6651] font-medium mb-1">
-              Category
-            </label>
-            <input
-              type="text"
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-xl"
-              placeholder="ex: personal, work, health..."
-            />
+            <label className="block text-[#4A6651] font-medium mb-1">Tag</label>
+
+            <div className="flex items-center gap-2 mb-3">
+              <select
+                name="category"
+                value={form.category}
+                onChange={handleChange}
+                className="flex-1 p-3 border rounded-xl"
+              >
+                <option value="">Select a Tag</option>
+                {tags.map((tag) => (
+                  <option key={tag._id} value={tag._id}>
+                    {tag.name}
+                  </option>
+                ))}
+              </select>
+
+              {form.category && (
+                <button
+                  type="button"
+                  onClick={() => deleteTag(form.category)}
+                  className="px-3 py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition"
+                >
+                  Delete
+                </button>
+              )}
+            </div>
+
+            {/* CREATE NEW TAG */}
+            {!creatingTag ? (
+              <button
+                type="button"
+                onClick={() => setCreatingTag(true)}
+                className="text-[#5B8A72] text-sm font-medium hover:underline"
+              >
+                + Create new tag
+              </button>
+            ) : (
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  placeholder="New tag name"
+                  className="flex-1 p-2 border rounded-xl"
+                />
+                <button
+                  type="button"
+                  onClick={createTag}
+                  className="px-4 py-2 bg-[#5B8A72] text-white rounded-xl"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCreatingTag(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-xl"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
           </div>
 
           {/* DATE */}
           <div>
-            <label className="block text-[#4A6651] font-medium mb-1">
-              Entry Date
-            </label>
+            <label className="block text-[#4A6651] font-medium mb-1">Entry Date</label>
             <input
               type="date"
               name="entryDate"
@@ -126,7 +210,7 @@ export default function AddJournal() {
             />
           </div>
 
-          {/* SUBMIT BUTTON */}
+          {/* SUBMIT */}
           <button
             type="submit"
             disabled={loading}
