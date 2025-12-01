@@ -14,7 +14,12 @@ export default function PublicRoute({ children }) {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return null;
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading...
+      </div>
+    );
 
-  return authenticated ? <Navigate to="/me" replace /> : children;
+  return authenticated ? <Navigate to="/dashboard" replace /> : children;
 }
