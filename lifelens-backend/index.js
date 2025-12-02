@@ -6,6 +6,7 @@ const connectDB = require("./db/config");
 const authRoutes = require("./routes/authRoutes");
 const journalRoutes = require("./routes/journalRoutes");
 const tagRoutes = require("./routes/tagRoutes");
+const aiRoutes = require("./routes/aiRoutes");
 
 dotenv.config();
 connectDB();
@@ -26,6 +27,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/tags", tagRoutes);
+app.use("/api/ai", aiRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
