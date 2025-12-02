@@ -33,7 +33,8 @@ export default function Navbar() {
           {[
             { name: "Dashboard", to: "/dashboard" },
             { name: "Journals", to: "/journals" },
-            { name: "Add Entry", to: "/journals/add" }
+            { name: "Add Entry", to: "/journals/add" },
+            { name : "Profile" , to:"/profile"}
           ].map((item) => (
             <Link
               key={item.to}

@@ -8,6 +8,7 @@ import PublicRoute from "./components/PublicRoute";
 import JournalsList from "./pages/JournalsList";
 import AddJournal from "./pages/AddJournal";
 import ViewJournal from "./pages/ViewJournal";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
@@ -66,6 +67,15 @@ function App() {
               <ViewJournal />
             </ProtectedRoute>
           } 
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile/>
+          </ProtectedRoute>
+        }
       />
     </Routes>
   );
