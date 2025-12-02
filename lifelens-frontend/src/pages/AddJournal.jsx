@@ -16,49 +16,51 @@ export default function AddJournal() {
 
   const [loading, setLoading] = useState(false);
 
-  // TAG STATES
   const [tags, setTags] = useState([]);
   const [newTag, setNewTag] = useState("");
   const [creatingTag, setCreatingTag] = useState(false);
 
-  // FETCH TAGS
+  const [starter, setStarter] = useState("");
+  const [starterLoading, setStarterLoading] = useState(false);
+
   useEffect(() => {
     api.get("/api/tags").then((res) => setTags(res.data.tags));
   }, []);
 
-  // ADD TAG
+  const fetchStarter = async () => {
+    setStarterLoading(true);
+    try {
+      const res = await api.get("/api/ai/starter");
+      setStarter(res.data.starter);
+    } catch (err) {
+      console.log(err);
+    }
+    setStarterLoading(false);
+  };
+
   const createTag = async () => {
     if (!newTag.trim()) return;
-
     const res = await api.post("/api/tags", { name: newTag });
-
     setTags((prev) => [...prev, res.data.tag]);
     setForm((prev) => ({ ...prev, category: res.data.tag._id }));
-
     setNewTag("");
     setCreatingTag(false);
   };
 
-  // DELETE TAG
   const deleteTag = async (tagId) => {
-    if (!window.confirm("Delete this tag? It will be removed from all journals.")) return;
-
+    if (!window.confirm("Delete this tag?")) return;
     await api.delete(`/api/tags/${tagId}`);
-
     setTags((prev) => prev.filter((t) => t._id !== tagId));
     setForm((prev) => ({ ...prev, category: "" }));
   };
 
-  // HANDLE INPUTS
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // SUBMIT JOURNAL ENTRY
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await api.post("/api/journal", form);
       navigate("/journals");
@@ -75,15 +77,24 @@ export default function AddJournal() {
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold text-[#4A6651] mb-6">
-          Add New Journal Entry
-        </h1>
+        <h1 className="text-3xl font-bold text-[#4A6651] mb-6">Add New Journal Entry</h1>
 
         <form
           onSubmit={handleSubmit}
           className="bg-white p-8 rounded-3xl shadow-lg border border-[#E3EFE7] space-y-6"
         >
-          {/* TITLE */}
+          <button
+            type="button"
+            onClick={fetchStarter}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+          >
+            {starterLoading ? "Thinking..." : "Give me a starter"}
+          </button>
+
+          {starter && (
+            <div className="p-3 mt-2 bg-gray-100 rounded-xl text-sm italic">{starter}</div>
+          )}
+
           <div>
             <label className="block text-[#4A6651] font-medium mb-1">Title</label>
             <input
@@ -97,11 +108,8 @@ export default function AddJournal() {
             />
           </div>
 
-          {/* CONTENT */}
           <div>
-            <label className="block text-[#4A6651] font-medium mb-1">
-              What happened today?
-            </label>
+            <label className="block text-[#4A6651] font-medium mb-1">What happened today?</label>
             <textarea
               name="content"
               rows={6}
@@ -109,11 +117,10 @@ export default function AddJournal() {
               value={form.content}
               onChange={handleChange}
               className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-[#A8DADC]"
-              placeholder="Write your thoughts, feelings, moments..."
+              placeholder="Write your thoughts..."
             />
           </div>
 
-          {/* MOOD */}
           <div>
             <label className="block text-[#4A6651] font-medium mb-1">Mood</label>
             <select
@@ -132,7 +139,6 @@ export default function AddJournal() {
             </select>
           </div>
 
-          {/* TAG FIELD + DELETE OPTION */}
           <div>
             <label className="block text-[#4A6651] font-medium mb-1">Tag</label>
 
@@ -155,14 +161,13 @@ export default function AddJournal() {
                 <button
                   type="button"
                   onClick={() => deleteTag(form.category)}
-                  className="px-3 py-2 bg-red-400 text-white rounded-xl hover:bg-red-500 transition"
+                  className="px-3 py-2 bg-red-400 text-white rounded-xl"
                 >
                   Delete
                 </button>
               )}
             </div>
 
-            {/* CREATE NEW TAG */}
             {!creatingTag ? (
               <button
                 type="button"
@@ -177,7 +182,6 @@ export default function AddJournal() {
                   type="text"
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
-                  placeholder="New tag name"
                   className="flex-1 p-2 border rounded-xl"
                 />
                 <button
@@ -190,7 +194,7 @@ export default function AddJournal() {
                 <button
                   type="button"
                   onClick={() => setCreatingTag(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-xl"
+                  className="px-4 py-2 bg-gray-300 rounded-xl"
                 >
                   Cancel
                 </button>
@@ -198,7 +202,6 @@ export default function AddJournal() {
             )}
           </div>
 
-          {/* DATE */}
           <div>
             <label className="block text-[#4A6651] font-medium mb-1">Entry Date</label>
             <input
@@ -210,11 +213,10 @@ export default function AddJournal() {
             />
           </div>
 
-          {/* SUBMIT */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#5B8A72] text-white rounded-xl shadow hover:bg-[#4B735E] transition"
+            className="w-full py-3 bg-[#5B8A72] text-white rounded-xl"
           >
             {loading ? "Saving..." : "Save Entry"}
           </button>
