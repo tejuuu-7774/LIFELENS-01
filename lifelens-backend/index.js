@@ -7,6 +7,8 @@ const authRoutes = require("./routes/authRoutes");
 const journalRoutes = require("./routes/journalRoutes");
 const tagRoutes = require("./routes/tagRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const profileRoutes = require("./routes/profileRoutes");
+const heatmapRoutes = require("./routes/heatmapRoutes");
 
 dotenv.config();
 connectDB();
@@ -28,6 +30,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/tags", tagRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/heatmap", heatmapRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
