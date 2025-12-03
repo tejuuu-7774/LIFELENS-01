@@ -86,7 +86,7 @@ export default function Dashboard() {
           </Link>
 
           <Link
-            to="/add-journal"
+            to="/articles"
             className="bg-white p-6 rounded-3xl shadow border border-green-100 hover:shadow-xl hover:bg-[#F3FAF6] transition transform hover:-translate-y-1 hover:-rotate-1 focus:ring-4 focus:ring-[#5B8A72]/30 group"
           >
             <Sparkles size={28} className="text-[#5B8A72] mb-3 p-1 bg-green-50 rounded-xl group-hover:scale-110 transition" />

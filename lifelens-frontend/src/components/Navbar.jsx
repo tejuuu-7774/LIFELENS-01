@@ -35,6 +35,7 @@ export default function Navbar() {
     { name: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
     { name: "Journals", to: "/journals", icon: BookOpen },
     { name: "Add Entry", to: "/journals/add", icon: PenTool },
+    { name: "Articles", to: "/articles", icon: Feather },
     { name: "Profile", to: "/profile", icon: User }
   ];
 

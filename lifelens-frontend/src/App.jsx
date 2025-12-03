@@ -9,6 +9,7 @@ import JournalsList from "./pages/JournalsList";
 import AddJournal from "./pages/AddJournal";
 import ViewJournal from "./pages/ViewJournal";
 import Profile from "./pages/Profile";
+import Articles from "./pages/Articles";
 
 function App() {
   return (
@@ -74,6 +75,15 @@ function App() {
         element={
           <ProtectedRoute>
             <Profile/>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/articles"
+        element={
+          <ProtectedRoute>
+            <Articles />
           </ProtectedRoute>
         }
       />
