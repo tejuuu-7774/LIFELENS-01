@@ -3,6 +3,7 @@ import api from "../utils/api";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import JournalHeatmap from "../components/JournalHeatmap"
+import Highlights from "../components/Highlights";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -80,8 +81,8 @@ export default function Profile() {
     <div className="min-h-screen bg-gradient-to-b from-[#F6FBF7] to-[#E6F3EC] pt-24">
       <Navbar />
 
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 pb-14">
-        <div className="bg-white/90 backdrop-blur-sm rounded-lg border border-[#DCEFE3] shadow-md p-8 sm:p-10">
+      <div className="w-full max-w-4xl mx-auto px-4 pb-10">
+        <div className="bg-white/90 backdrop-blur-sm rounded-lg border border-[#DCEFE3] shadow p-6 sm:p-8">
 
           {/* HEADER */}
           <div className="flex flex-col items-center mb-10">
@@ -148,6 +149,7 @@ export default function Profile() {
             </button>
 
             <JournalHeatmap/>
+            <Highlights/>
           </div>
         </div>
       </div>
