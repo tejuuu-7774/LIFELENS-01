@@ -115,18 +115,18 @@ export default function Profile() {
   };
 
   const deleteAccount = async () => {
-    if (!window.confirm("Delete your account permanently?")) return;
+  if (!window.confirm("Delete your account permanently?")) return;
 
-    setDeleting(true);
-    try {
-      await api.delete("/api/profile/delete");
-      localStorage.removeItem("token");
-      navigate("/");
-    } catch {
-      setNotification({ message: "Error deleting account.", type: "error" });
-    }
-    setDeleting(false);
-  };
+      setDeleting(true);
+      try {
+        await api.delete("/api/profile/delete");
+        localStorage.removeItem("token");
+        window.location.href = "/";
+      } catch {
+        setNotification({ message: "Error deleting account.", type: "error" });
+      }
+      setDeleting(false);
+    };
 
   if (loading)
     return (

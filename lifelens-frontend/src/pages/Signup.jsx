@@ -4,7 +4,7 @@ import api from "../utils/api";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,9 +43,9 @@ export default function Signup() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="text"
-            name="name"
+            name="username"
             placeholder="Full Name"
-            value={formData.name}
+            value={formData.username}
             onChange={handleChange}
             required
             className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A8DADC]"

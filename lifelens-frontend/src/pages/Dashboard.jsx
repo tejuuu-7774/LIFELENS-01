@@ -55,7 +55,7 @@ export default function Dashboard() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-28 py-10">
         <div className="bg-white p-8 sm:p-10 rounded-t-[2.5rem] rounded-b-lg shadow-2xl border border-green-100 text-center mb-10">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-[#2F4A3E]">
-            {user ? `Welcome, ${user.name}` : "Loading..."}
+            {user ? `Welcome, ${user.username}` : "Loading..."}
           </h2>
           <p className="text-gray-500 mt-2 text-base sm:text-lg">
             Here’s your calm corner to reflect and uncover your story.
@@ -64,7 +64,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <Link
-            to="/add-journal"
+            to="/journals/add"
             className="bg-white p-6 rounded-3xl shadow border border-green-100 hover:shadow-xl hover:bg-[#F3FAF6] transition transform hover:-translate-y-1 hover:rotate-1 focus:ring-4 focus:ring-[#5B8A72]/30 group"
           >
             <Feather size={28} className="text-[#5B8A72] mb-3 p-1 bg-green-50 rounded-xl group-hover:scale-110 transition" />
