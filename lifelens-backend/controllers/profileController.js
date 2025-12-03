@@ -1,8 +1,6 @@
 const User = require("../models/User");
 const Journal = require("../models/Journal");
-// const Highlight = require("../models/Highlight");
 
-// READING THE PROFILE
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -14,8 +12,8 @@ exports.getProfile = async (req, res) => {
       ? Math.floor((Date.now() - new Date(firstEntry.entryDate)) / (1000 * 60 * 60 * 24 * 30))
       : 0;
 
-    // Streak calculation
     const entries = await Journal.find({ user: req.user.id }).sort({ entryDate: -1 });
+
     let streak = 0;
     let previous = null;
 
@@ -27,7 +25,6 @@ exports.getProfile = async (req, res) => {
         streak = 1;
       } else {
         const diff = (previous - day) / (1000 * 60 * 60 * 24);
-
         if (diff === 1) {
           streak++;
           previous = day;
@@ -35,27 +32,22 @@ exports.getProfile = async (req, res) => {
       }
     }
 
-    res.json({
+    return res.json({
       success: true,
       user: {
         _id: user._id,
         username: user.username,
         email: user.email,
-
-        // Add new fields to response
         totalJournals,
         longestStreak: streak,
         accountAgeMonths,
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-
-// UPDATING PROFILE 
 exports.updateProfile = async (req, res) => {
   try {
     const { username, email } = req.body;
@@ -66,22 +58,20 @@ exports.updateProfile = async (req, res) => {
       { new: true }
     ).select("-password");
 
-    return res.json({ user: updated });
+    return res.json({ success: true, user: updated });
   } catch (err) {
     return res.status(500).json({ error: "Failed to update profile" });
   }
 };
 
-// DELETE THE ACCOUNT
 exports.deleteAccount = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    await Journal.deleteMany({ user: userId });
     await User.findByIdAndDelete(userId);
-    await Journal.deleteMany({ userId });
-    await Highlight.deleteMany({ userId });
 
-    return res.json({ message: "Account deleted" });
+    return res.json({ success: true, message: "Account deleted" });
   } catch (err) {
     return res.status(500).json({ error: "Failed to delete account" });
   }

@@ -4,8 +4,9 @@ const User = require("../models/User");
 
 async function signup(req, res) {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password)
+    const { username, email, password } = req.body;
+
+    if (!username || !email || !password)
       return res.status(400).json({ message: "All fields are required" });
 
     const existing = await User.findOne({ email });
@@ -13,7 +14,12 @@ async function signup(req, res) {
       return res.status(400).json({ message: "Email already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword });
+
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword
+    });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
@@ -24,10 +30,13 @@ async function signup(req, res) {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-
     res.status(201).json({
       message: "Signup successful",
-      user: { id: user._id, name: user.name, email: user.email }
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
     });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
@@ -68,8 +77,16 @@ async function login(req, res) {
 
 async function getMe(req, res) {
   try {
-    const user = await User.findById(req.user.id).select("-password");
-    res.json({ user });
+    const user = await User.findById(req.user.id).select("username email avatar");
+
+    res.json({
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar || ""
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: "Server error" });
   }
