@@ -9,13 +9,16 @@ const tagRoutes = require("./routes/tagRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const heatmapRoutes = require("./routes/heatmapRoutes");
+const highlightRoutes = require("./routes/highlightRoutes");
 
 dotenv.config();
 connectDB();
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
 app.use(cookieParser());
 
 app.use(
@@ -32,6 +35,7 @@ app.use("/api/tags", tagRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/heatmap", heatmapRoutes);
+app.use("/api/highlights", highlightRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running");
