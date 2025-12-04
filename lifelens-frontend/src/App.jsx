@@ -10,6 +10,7 @@ import AddJournal from "./pages/AddJournal";
 import ViewJournal from "./pages/ViewJournal";
 import Profile from "./pages/Profile";
 import Articles from "./pages/Articles";
+import Contact from "./pages/Contact"
 
 function App() {
   return (
@@ -84,6 +85,15 @@ function App() {
         element={
           <ProtectedRoute>
             <Articles />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/contact"
+        element={
+          <ProtectedRoute>
+            <Contact/>
           </ProtectedRoute>
         }
       />

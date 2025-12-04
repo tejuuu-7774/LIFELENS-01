@@ -36,7 +36,8 @@ export default function Navbar() {
     { name: "Journals", to: "/journals", icon: BookOpen },
     { name: "Add Entry", to: "/journals/add", icon: PenTool },
     { name: "Articles", to: "/articles", icon: Feather },
-    { name: "Profile", to: "/profile", icon: User }
+    { name: "Profile", to: "/profile", icon: User },
+    { name: "Contact", to: "/contact", icon: Feather }
   ];
 
   const active = (path) => location.pathname === path;
@@ -72,6 +73,7 @@ export default function Navbar() {
           ))}
         </div>
 
+        
         {/* Desktop Logout */}
         <button
           onClick={logout}
