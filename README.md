@@ -7,6 +7,8 @@ LifeLens is a modern journaling experience built to help you capture your days, 
 ## 🚀 Hosted Links
 
 🔗 **Frontend:** https://lifelens-01.vercel.app/  
+🔗 **Backend:** https://lifelens-01.onrender.com
+(Note: Protected routes require authentication)
 
 ---
 
